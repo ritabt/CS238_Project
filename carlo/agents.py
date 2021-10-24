@@ -1,11 +1,11 @@
-from entities import RectangleEntity, CircleEntity, RingEntity
-from geometry import Point
+from .entities import RectangleEntity, CircleEntity, RingEntity
+from .geometry import Point
 
 # For colors, we use tkinter colors. See http://www.science.smith.edu/dftwiki/index.php/Color_Charts_for_TKinter
 
 class Car(RectangleEntity):
     def __init__(self, center: Point, heading: float, color: str = 'red'):
-        size = Point(4., 2.)
+        size = Point(14., 8.)
         movable = True
         friction = 0.06
         super(Car, self).__init__(center, heading, size, movable, friction)
