@@ -23,6 +23,10 @@ for i in range(20):
 	w.add(carlo.Painting(carlo.Point(50, 10 + i*13), carlo.Point(1, 5), 'white'))
 	w.add(carlo.Painting(carlo.Point(70, 10 + i*13), carlo.Point(1, 5), 'white'))
 
+# Obstacles
+w.add(carlo.RectangleBuilding(carlo.Point(40, 70), carlo.Point(15, 2), '#FF6103'))
+w.add(carlo.RectangleBuilding(carlo.Point(40, 77), carlo.Point(15, 2), '#FF6103'))
+
 # A Car object is a dynamic object -- it can move. We construct it using its center location and heading angle.
 c1 = carlo.Car(carlo.Point(40,10), np.pi/2)
 w.add(c1)
@@ -35,4 +39,10 @@ while True:
 	w.render()
 	w.tick()
 	time.sleep(dt/4)
+	# print("Red car position: ", c1.center)
+	if w.collision_exists(c1):
+		print('Red car collided with something...')
+	if w.collision_exists(c2):
+		print('Blue car collided with something...')
+
 
