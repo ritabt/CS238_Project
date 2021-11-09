@@ -11,6 +11,21 @@ class Car(RectangleEntity):
         super(Car, self).__init__(center, heading, size, movable, friction)
         self.color = color
         self.collidable = True
+
+    def get_reward(self, collision_exists: bool, reached_goal: bool):
+        # r = r(s, a)
+        # - large positive reward for reaching the goal
+        # - large negative reward for colliding or going off the road
+        # - small negative reward for every tick we have not reached the goal
+        r = 0
+        if collision_exists:
+            r = r - 1000
+        elif reached_goal:
+            r = r + 100000
+        else:
+            r = r - 1
+
+        return r
         
 class Pedestrian(CircleEntity):
     def __init__(self, center: Point, heading: float, color: str = 'LightSalmon3'): # after careful consideration, I decided my color is the same as a salmon, so here we go.
