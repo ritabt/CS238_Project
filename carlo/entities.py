@@ -27,6 +27,7 @@ class Entity:
     
     def set_control(self, inputSteering: float, inputAcceleration: float):
         self.inputSteering = inputSteering
+        # add noise 
         self.inputAcceleration = inputAcceleration
     
     @property
