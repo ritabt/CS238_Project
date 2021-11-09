@@ -27,10 +27,16 @@ for i in range(20):
 w.add(carlo.RectangleBuilding(carlo.Point(40, 70), carlo.Point(15, 2), '#FF6103'))
 w.add(carlo.RectangleBuilding(carlo.Point(40, 77), carlo.Point(15, 2), '#FF6103'))
 
+goal = carlo.Painting(carlo.Point(60, 100), carlo.Point(40, 1), 'green')
+
+w.add(goal) # We build a goal.
+
 # A Car object is a dynamic object -- it can move. We construct it using its center location and heading angle.
 c1 = carlo.Car(carlo.Point(40,10), np.pi/2)
 w.add(c1)
-c1.set_control(0, 0.55)
+c1.set_control(0.0, 0.55)
+# TODO: make this a constant size to run faster
+r1 = []
 
 c2 = carlo.Car(carlo.Point(60,10), np.pi/2, 'blue')
 w.add(c2)
@@ -39,10 +45,23 @@ while True:
 	w.render()
 	w.tick()
 	time.sleep(dt/4)
+
+	c1_collided = w.collision_exists(c1)
+	c2_collided = w.collision_exists(c2)
+	c1_reached_goal = c1.collidesWith(goal)
+	r1.append(c1.get_reward(c1_collided, c1_reached_goal))
+
+	print(c1.center)
+
+	print("Reward: ", c1.get_reward(c1_collided, c1_reached_goal))
+
 	# print("Red car position: ", c1.center)
-	if w.collision_exists(c1):
+	if c1_collided:
 		print('Red car collided with something...')
-	if w.collision_exists(c2):
+	if c2_collided:
 		print('Blue car collided with something...')
+	if c1_reached_goal:
+		print('Red car reached goal')
+
 
 
