@@ -1,6 +1,7 @@
 import numpy as np
 import carlo 
 import time 
+import RL
 
 # how fast does it refresh
 dt = 0.1 # time steps in terms of seconds. In other words, 1/dt is the FPS.
@@ -40,11 +41,22 @@ c1.set_control(0, 0.55)
 c2 = carlo.Car(carlo.Point(60,10), np.pi/2, 'blue')
 w.add(c2)
 c2.set_control(0, 0.35)
+
+
+Pos = RL.DiscretePos(120, 120, 12, 12)
+Heading = RL.DiscreteHeading(6)
+Acceleration = RL.DiscreteAction(-1, 1, 10)
+
 while True:
 	w.render()
 	w.tick()
 	time.sleep(dt/4)
 	print("Red car position: ", c1.center)
+	print("Red car heading: ", c1.heading)
+	print("Red car acceleration: ", c1.inputAcceleration)
+	print("Discrete Red car position: ", Pos.discretize(c1.center.x, c1.center.y))
+	print("Discrete Red car heading: ", Heading.discretize(c1.heading))
+	print("Discrete Red car acceleration: ", Acceleration.discretize(c1.inputAcceleration))
 	if w.collision_exists(c1):
 		print('Red car collided with something...')
 	if w.collision_exists(c2):
