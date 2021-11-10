@@ -46,6 +46,7 @@ c2.set_control(0, 0.35)
 Pos = RL.DiscretePos(120, 120, 12, 12)
 Heading = RL.DiscreteHeading(6)
 Acceleration = RL.DiscreteAction(-1, 1, 10)
+Steering = RL.DiscreteAction(0, 2*np.pi, 12)
 
 while True:
 	w.render()
@@ -57,6 +58,8 @@ while True:
 	print("Discrete Red car position: ", Pos.discretize(c1.center.x, c1.center.y))
 	print("Discrete Red car heading: ", Heading.discretize(c1.heading))
 	print("Discrete Red car acceleration: ", Acceleration.discretize(c1.inputAcceleration))
+	RedCarState = RL.State(c1, Pos, Heading, Acceleration, Steering)
+	print("Linear Red Car State: ", RedCarState.linearize())
 	if w.collision_exists(c1):
 		print('Red car collided with something...')
 	if w.collision_exists(c2):
