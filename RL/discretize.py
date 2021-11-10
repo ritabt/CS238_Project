@@ -43,10 +43,10 @@ class DiscreteHeading():
 			return higher
 
 class DiscreteAction():
-	def __init__(self, low, high, n_bins):
+	def __init__(self, low, high, num_bins):
 		self.low = low
 		self.high = high
-		self.n_bins = n_bins
+		self.num_bins = num_bins
 		self.step_size = float((high - low)/num_bins)
 
 	def discretize(self, val):
