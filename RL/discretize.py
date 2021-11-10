@@ -7,22 +7,32 @@ class DiscretePos():
 		self.world_height = world_height
 		self.width_bins = width_bins
 		self.height_bins = height_bins
+		self.x_vals = np.linspace(0, world_width, num=width_bins+1)
+		self.y_vals = np.linspace(0, world_height, num=height_bins+1)
+
+	def get_pos(self, out_idx):
+		idx_x = out_idx%self.width_bins
+		idx_y = out_idx//self.width_bins
+		return self.x_vals[idx_x], self.y_vals[idx_y]
 
 	def snap_to_grid(self, pos, dim, num_bins):
 		step_size = float(dim/num_bins)
-		bin_idx = pos//step_size
+		bin_idx = int(pos//step_size)
 		lower = bin_idx * step_size
 		higher = (bin_idx+1) * step_size
 		if abs(pos-lower) <= abs(pos-higher):
-			return lower
+			return bin_idx, lower
 		else:
-			return higher
+			return bin_idx + 1, higher
+
+	def map_to_idx(self, idx_x, idx_y):
+		return idx_x + idx_y * self.width_bins
 
 	def discretize(self, pos_x, pos_y):
-		# Turn space into grid and snap position to closest grid spot
-		pos_x = self.snap_to_grid(pos_x, self.world_width, self.width_bins)
-		pos_y = self.snap_to_grid(pos_y, self.world_height, self.height_bins)
-		return pos_x, pos_y
+		idx_x, pos_x = self.snap_to_grid(pos_x, self.world_width, self.width_bins)
+		idx_y, pos_y = self.snap_to_grid(pos_y, self.world_height, self.height_bins)
+		output = self.map_to_idx(idx_x, idx_y)
+		return output
 
 class DiscreteHeading():
 	def __init__(self, num_bins, low=0, high=2*np.pi):
