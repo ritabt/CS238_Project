@@ -58,8 +58,8 @@ while True:
 	print("Discrete Red car position: ", Pos.discretize(c1.center.x, c1.center.y))
 	print("Discrete Red car heading: ", Heading.discretize(c1.heading))
 	print("Discrete Red car acceleration: ", Acceleration.discretize(c1.inputAcceleration))
-	# RedCarState = RL.State(c1, Pos, Heading, Acceleration, Steering)
-	# print("Linear Red Car State: ", RedCarState.linearize())
+	RedCarState = RL.State(c1, Pos, Heading, Acceleration, Steering)
+	print("Linear Red Car State: ", RedCarState.linearize())
 	if w.collision_exists(c1):
 		print('Red car collided with something...')
 	if w.collision_exists(c2):

@@ -1,28 +1,30 @@
 class State():
 	def __init__(self, Car, Pos, Heading, Acceleration, Steering):
 		self.Pos = Pos
-		self.pos_x, self.pos_y = Pos.discretize(Car.center.x, Car.center.y)
-		self.heading = Heading.discretize(Car.heading)
-		self.acceleration = Acceleration.discretize(Car.inputAcceleration)
-		self.steering = Steering.discretize(Car.inputSteering)
+		self.Heading = Heading
+		self.Acceleration = Acceleration
+		self.Steering = Steering
+		self.pos_idx = Pos.discretize(Car.center.x, Car.center.y)
+		self.h_idx = Heading.discretize(Car.heading)
+		self.acc_idx = Acceleration.discretize(Car.inputAcceleration)
+		self.st_idx = Steering.discretize(Car.inputSteering)
 
 	def linearize(self):
-		'''
-			- range of acceleration = [-1, 1]
-			- range of steering = [0, 2*pi] = [0, 6.3]
-			- range of heading = [0, 2*pi] = [0, 6.3]
-			- range of pos_x = [0, 120] = [0, Pos.world_width]
-			- range of pos_y = [0, 120] = [0, Pos.world_height]
+		# start by adding position - add 1 to avoid 0 output
+		output = 1 + self.pos_idx
 
-			Method: shift each state value and add everything together 
-				    to create a unique value for each state
-		'''
-		
-		# counting digits from the right
-		digit_1 = 1 + self.acceleration
-		digit_2_3 = 100*self.steering
-		digit_4_5 = 10000*self.heading
-		pos = self.pos_x + 1000*self.pos_y
-		digit_6_11 = pos*(10^6)
-		return digit_1 + digit_2_3 + digit_4_5 + digit_6_11
+		# shift by acceleration num possible vals and add acc
+		acc_num_vals = self.Acceleration.num_bins + 1
+		output = output*acc_num_vals + self.acc_idx
+
+		# shift by steering num possible vals and add steering
+		st_num_vals = self.Steering.num_bins + 1
+		output = output*st_num_vals + self.st_idx
+
+		# shift by heading num possible vals and add heading
+		h_num_vals = self.Heading.num_bins + 1
+		output = output*h_num_vals + self.h_idx
+
+		return int(output)
+
 		
