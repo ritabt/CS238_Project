@@ -1,5 +1,5 @@
 class State():
-	def __init__(self, Car, Pos, Heading, Acceleration, Steering):
+	def __init__(self, Car, Pos, Heading):
 		self.Pos = Pos
 		self.Heading = Heading
 		self.pos_idx = Pos.discretize(Car.center.x, Car.center.y)
