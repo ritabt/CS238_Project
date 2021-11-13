@@ -3,7 +3,7 @@ import carlo
 import time 
 import RL
 
-DEBUG = False
+DEBUG = True
 
 # how fast does it refresh
 dt = 0.1 # time steps in terms of seconds. In other words, 1/dt is the FPS.
@@ -58,6 +58,11 @@ while True:
 	w.render()
 	w.tick()
 	time.sleep(dt/4)
+
+	RedCarState = RL.State(c1, Pos, Heading, goal)
+	RedCarAction = RL.Action(c1, Acceleration, Steering)
+	curr_reward = RL.get_reward(RedCarState, RedCarAction, w)
+
 	if DEBUG:
 		print("Red car position: ", c1.center)
 		print("Red car heading: ", c1.heading)
@@ -66,9 +71,7 @@ while True:
 		print("Discrete Red car heading: ", Heading.discretize(c1.heading))
 		print("Discrete Red car acceleration: ", Acceleration.discretize(c1.inputAcceleration))
 		print("Linear Red Car State: ", RedCarState.linearize())
-	RedCarState = RL.State(c1, Pos, Heading, goal)
-	RedCarAction = RL.Action(c1, Acceleration, Steering)
-	curr_reward = RL.get_reward(RedCarState, RedCarAction, w)
+
 	if curr_reward > 500:
 		print('Red car reached goal...')
 		break

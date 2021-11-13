@@ -43,31 +43,63 @@ def build_world():
     goal = carlo.Painting(carlo.Point(60, 100), carlo.Point(40, 1), 'green')
 
     w.add(goal)  # We build a goal.
-    return w
+    return w, goal
 
 class Environment:
     def __init__(self):
-        self.w = build_world()
+        self.w, self.goal = build_world()
+        # these moved to reset and should be ok to remove from here
+        #self.car = carlo.Car(carlo.Point(40, 10), np.pi / 2)
+        #self.w.add(self.car)
+        #self.car.set_control(0, 0.55)
+
+        # discretizer
+        self.position_discretizer = RL.DiscretePos(120, 120, 12, 12)
+        self.heading_discretizer = RL.DiscreteHeading(6)
+        self.acceleration_discretizer = RL.DiscreteAction(-1, 1, 10)
+        self.steering_discretizer = RL.DiscreteAction(0, 2 * np.pi, 12)
+
+    # reset the world and restart
+    def reset(self):
+        self.w.reset()
         self.car = carlo.Car(carlo.Point(40, 10), np.pi / 2)
         self.w.add(self.car)
         self.car.set_control(0, 0.55)
 
-    # reset the world and restart
-    def reset(self):
-        # how do we reset the car?
-        # return the rested car state
-        return 0
+        # return the car state
+        car_state = RL.State(self.car, self.position_discretizer,
+                             self.heading_discretizer, self.goal)
+        return car_state.linearize()
 
     # sample an action randomly from the action space
     def action_space_sample(self):
+        # 3. Need a function returning a random action
         return 0
 
     # one step forward with the given action
+    # returns the new state, reward, is_done
     def step(self, action):
-        return 0, 0, True
+
+        car_state = RL.State(self.car, self.position_discretizer,
+                             self.heading_discretizer, self.goal)
+        car_action = RL.Action(self.car, self.acceleration_discretizer,
+                                 self.steering_discretizer)
+
+        # 4. ***Given a linear indexed action, how to command the car?
+
+        self.w.render()
+        self.w.tick()
+
+        #1. Need a “is_done” - yup definitely. :)
+        is_done = True
+        #5. Confirm if this(same comment in the source) is right
+        return car_state.linearize(), \
+               RL.get_reward(car_state, car_action, self.w), \
+               is_done
 
     # return the number of the actions available
     def action_space_number(self):
+        # 2. Need a function returning the number of actions available
         return 0
 
 class Agent:
