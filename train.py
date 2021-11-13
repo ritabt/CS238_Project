@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import gym
+import random
 import collections
 import numpy as np
 import carlo
@@ -62,6 +63,23 @@ class Environment:
         self.acceleration_discretizer = RL.DiscreteAction(-1, 1, self.num_accel_actions - 1)
         self.steering_discretizer = RL.DiscreteAction(0, 2 * np.pi, self.num_steer_actions - 1)
 
+        # dictionary which maps linearlized action state index to an RL.Action object
+        self.index_to_action = self.make_index_to_action()
+
+    def make_index_to_action(self):
+        index_to_action = {}
+        # loop over all accel commands
+        for acc in self.acceleration_discretizer.vals:
+            # loop over all steer commands
+            for theta in self.steering_discretizer.vals:
+                # build a car object, state doesn't matter can be anything
+                car = carlo.Car(carlo.Point(40, 10), np.pi / 2)
+                car.set_control(theta, acc)
+                car_action = RL.Action(car, self.acceleration_discretizer,
+                                 self.steering_discretizer)
+                index_to_action[car_action.linearize()] = car_action
+        return index_to_action
+
     # reset the world and restart
     def reset(self):
         self.w.reset()
@@ -78,7 +96,7 @@ class Environment:
     def action_space_sample(self):
         # 3. Need a function returning a random action
         # should this be an action class or the linearized index?
-        return 0
+        return random.choice(self.index_to_action.keys())
 
     # one step forward with the given action
     # returns the new state, reward, is_done
