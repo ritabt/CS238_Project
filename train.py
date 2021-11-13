@@ -56,8 +56,11 @@ class Environment:
         # discretizer
         self.position_discretizer = RL.DiscretePos(120, 120, 12, 12)
         self.heading_discretizer = RL.DiscreteHeading(6)
-        self.acceleration_discretizer = RL.DiscreteAction(-1, 1, 10)
-        self.steering_discretizer = RL.DiscreteAction(0, 2 * np.pi, 12)
+        self.num_accel_actions = 11
+        self.num_steer_actions = 13
+        # num_bins = num_actions - 1
+        self.acceleration_discretizer = RL.DiscreteAction(-1, 1, self.num_accel_actions - 1)
+        self.steering_discretizer = RL.DiscreteAction(0, 2 * np.pi, self.num_steer_actions - 1)
 
     # reset the world and restart
     def reset(self):
@@ -74,6 +77,7 @@ class Environment:
     # sample an action randomly from the action space
     def action_space_sample(self):
         # 3. Need a function returning a random action
+        # should this be an action class or the linearized index?
         return 0
 
     # one step forward with the given action
@@ -86,12 +90,14 @@ class Environment:
                                  self.steering_discretizer)
 
         # 4. ***Given a linear indexed action, how to command the car?
+        # Ideally we store both the linear indexed action and the corresponding action class
+        # (maybe in a dict)? Then we can just call car.set_control(steer, accel) to command
 
         self.w.render()
         self.w.tick()
 
-        #1. Need a “is_done” - yup definitely. :)
-        is_done = True
+        #1. Need a “is_done” - we are done if we collide with something (including the goal)
+        is_done = self.w.collision_exists(car_state.car)
         #5. Confirm if this(same comment in the source) is right
         return car_state.linearize(), \
                RL.get_reward(car_state, car_action, self.w), \
@@ -100,7 +106,7 @@ class Environment:
     # return the number of the actions available
     def action_space_number(self):
         # 2. Need a function returning the number of actions available
-        return 0
+        return self.num_accel_actions * self.num_steer_actions
 
 class Agent:
     def __init__(self):
