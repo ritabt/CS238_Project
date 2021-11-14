@@ -10,6 +10,8 @@ class World:
         self.t = 0 # simulation time
         self.dt = dt # simulation time step
         self.visualizer = Visualizer(width, height, ppm=ppm)
+        self.width = width
+        self.height = height
         
     def add(self, entity: Entity):
         if entity.movable:
@@ -29,6 +31,13 @@ class World:
     @property
     def agents(self):
         return self.static_agents + self.dynamic_agents
+
+    def is_out_of_world(self, agent):
+        if agent.center.x<0 or agent.center.x>self.width:
+            return True
+        if agent.center.y<0 or agent.center.y>self.height:
+            return True
+        return False
         
     def collision_exists(self, agent = None):
         if agent is None:
