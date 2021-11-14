@@ -207,12 +207,14 @@ class Agent:
 
         return total_reward
 
+TOTAL_ITER_COUNT = 1000
 if __name__ == "__main__":
     agent = Agent()
 
     iteration_count = 0
     best_reward = 0.0
-    while True:
+    while iteration_count > TOTAL_ITER_COUNT:
+        :
         iteration_count += 1
         s, a, r, s_next = agent.sample_env()
         agent.value_update(s, a, r, s_next)
@@ -224,6 +226,3 @@ if __name__ == "__main__":
         if reward > best_reward:
             print("Best reward updated %.3f -> %.3f" % (best_reward, reward))
             best_reward = reward
-        if reward > 0.80:
-            print("Solved in %d iterations!" % iteration_count)
-            break
