@@ -96,7 +96,7 @@ class Environment:
     def action_space_sample(self):
         # 3. Need a function returning a random action
         # should this be an action class or the linearized index?
-        return random.choice(self.index_to_action.keys())
+        return random.choice(list(self.index_to_action.keys()))
 
     # one step forward with the given action
     # returns the new state, reward, is_done
@@ -104,12 +104,15 @@ class Environment:
 
         car_state = RL.State(self.car, self.position_discretizer,
                              self.heading_discretizer, self.goal)
-        car_action = RL.Action(self.car, self.acceleration_discretizer,
-                                 self.steering_discretizer)
 
         # 4. ***Given a linear indexed action, how to command the car?
         # Ideally we store both the linear indexed action and the corresponding action class
         # (maybe in a dict)? Then we can just call car.set_control(steer, accel) to command
+        car_action = self.index_to_action[action]
+        steering_idx = car_action.st_idx
+        accel_idx = car_action.acc_idx
+        self.car.set_control(car_action.Steering.vals[steering_idx],
+                             car_action.Acceleration[accel_idx])
 
         self.w.render()
         self.w.tick()
