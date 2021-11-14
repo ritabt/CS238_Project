@@ -3,6 +3,7 @@ import carlo
 import time 
 import RL
 
+DEBUG = True
 # how fast does it refresh
 dt = 0.1 # time steps in terms of seconds. In other words, 1/dt is the FPS.
 w = carlo.World(dt, width = 120, height = 120, ppm = 6) # The world is 120 meters by 120 meters. ppm is the pixels per meter.
@@ -27,9 +28,13 @@ for i in range(20):
 	w.add(carlo.Painting(carlo.Point(50, 10 + i*13), carlo.Point(1, 5), 'white'))
 	w.add(carlo.Painting(carlo.Point(70, 10 + i*13), carlo.Point(1, 5), 'white'))
 
-# Obstacles
-w.add(carlo.RectangleBuilding(carlo.Point(40, 70), carlo.Point(15, 2), '#FF6103'))
-w.add(carlo.RectangleBuilding(carlo.Point(40, 77), carlo.Point(15, 2), '#FF6103'))
+# Obstacles - No obstacles for now
+# w.add(carlo.RectangleBuilding(carlo.Point(40, 70), carlo.Point(15, 2), '#FF6103'))
+# w.add(carlo.RectangleBuilding(carlo.Point(40, 77), carlo.Point(15, 2), '#FF6103'))
+
+goal = carlo.Painting(carlo.Point(60, 100), carlo.Point(40, 1), 'green')
+
+w.add(goal) # We build a goal.
 
 # A Car object is a dynamic object -- it can move. We construct it using its center location and heading angle.
 # Red Car
@@ -37,10 +42,10 @@ c1 = carlo.Car(carlo.Point(40,10), np.pi/2)
 w.add(c1)
 c1.set_control(0, 0.55)
 
-# Blue Car
-c2 = carlo.Car(carlo.Point(60,10), np.pi/2, 'blue')
-w.add(c2)
-c2.set_control(0, 0.35)
+# Blue Car - Only 1 car for now
+# c2 = carlo.Car(carlo.Point(60,10), np.pi/2, 'blue')
+# w.add(c2)
+# c2.set_control(0, 0.35)
 
 
 Pos = RL.DiscretePos(120, 120, 12, 12)
@@ -52,19 +57,24 @@ while True:
 	w.render()
 	w.tick()
 	time.sleep(dt/4)
-	print("Red car position: ", c1.center)
-	print("Red car heading: ", c1.heading)
-	print("Red car acceleration: ", c1.inputAcceleration)
-	print("Discrete Red car position: ", Pos.discretize(c1.center.x, c1.center.y))
-	print("Discrete Red car heading: ", Heading.discretize(c1.heading))
-	print("Discrete Red car acceleration: ", Acceleration.discretize(c1.inputAcceleration))
-	RedCarState = RL.State(c1, Pos, Heading, Acceleration, Steering)
-	print("Linear Red Car State: ", RedCarState.linearize())
-	if w.collision_exists(c1):
-		print('Red car collided with something...')
-	if w.collision_exists(c2):
-		print('Blue car collided with something...')
 
-		#add goal function
+	RedCarState = RL.State(c1, Pos, Heading, goal)
+	RedCarAction = RL.Action(c1, Acceleration, Steering)
+	curr_reward = RL.get_reward(RedCarState, RedCarAction, w)
+
+	if DEBUG:
+		print("Red car position: ", c1.center)
+		print("Red car heading: ", c1.heading)
+		print("Red car acceleration: ", c1.inputAcceleration)
+		print("Discrete Red car position: ", Pos.discretize(c1.center.x, c1.center.y))
+		print("Discrete Red car heading: ", Heading.discretize(c1.heading))
+		print("Discrete Red car acceleration: ", Acceleration.discretize(c1.inputAcceleration))
+		print("Linear Red Car State: ", RedCarState.linearize())
+
+	if curr_reward > 500:
+		print('Red car reached goal...')
+		break
+	# if w.collision_exists(c2):
+	# 	print('Blue car collided with something...')
 
 
