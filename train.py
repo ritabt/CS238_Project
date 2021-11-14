@@ -7,7 +7,6 @@ import carlo
 import time
 import RL
 
-ENV_NAME = "FrozenLake-v1"
 GAMMA = 0.9
 ALPHA = 0.2
 EPISODES_NUM = 10
@@ -49,10 +48,6 @@ def build_world():
 class Environment:
     def __init__(self):
         self.w, self.goal = build_world()
-        # these moved to reset and should be ok to remove from here
-        #self.car = carlo.Car(carlo.Point(40, 10), np.pi / 2)
-        #self.w.add(self.car)
-        #self.car.set_control(0, 0.55)
 
         # discretizer
         self.position_discretizer = RL.DiscretePos(120, 120, 12, 12)
@@ -111,14 +106,9 @@ class Environment:
         car_action = self.index_to_action[action]
         steering_idx = int(car_action.st_idx)
         accel_idx = int(car_action.acc_idx)
-        # print(steering_idx)
-        # print(accel_idx)
+
         self.car.set_control(car_action.Steering.get_val(steering_idx),
                              car_action.Acceleration.get_val(accel_idx))
-        #print("Steering")
-        #print(car_action.Steering.get_val(steering_idx))
-        #print("Accel")
-        #print(car_action.Acceleration.get_val(accel_idx))
 
         self.w.render()
         self.w.tick()
@@ -158,15 +148,7 @@ class Agent:
         best_action = []
         for a in range(self.env.action_space_number()):
             action_value = self.Q[(s, a)]
-            """
-            print("in best_value_and_action")
-            print("state")
-            print(s)
-            print("action")
-            print(a)
-            print("Q")
-            print(self.Q[(s,a)])
-            """
+
             if best_action_value is None or best_action_value < action_value:
                 best_action_value = action_value
                 if len(best_action) != 0:
@@ -176,11 +158,6 @@ class Agent:
             elif best_action_value == action_value:
                 best_action.append(a)
 
-
-        #print("best_action_value")
-        #print(best_action_value)
-        #print("best_action")
-        #print(best_action)
         return best_action_value, random.choice(best_action)
 
     def value_update(self, s, a, r, s_next):
@@ -213,8 +190,7 @@ if __name__ == "__main__":
 
     iteration_count = 0
     best_reward = 0.0
-    while iteration_count > TOTAL_ITER_COUNT:
-        :
+    while iteration_count <= TOTAL_ITER_COUNT:
         iteration_count += 1
         s, a, r, s_next = agent.sample_env()
         agent.value_update(s, a, r, s_next)
