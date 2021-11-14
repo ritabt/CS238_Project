@@ -20,7 +20,7 @@ class State():
 		output = output*goal_pose_num_vals + self.goal_pos_idx
 
 		# add 1 to avoid 0 output
-		output += 1
+		#output += 1
 		return int(output)
 
 		
