@@ -10,6 +10,8 @@ import RL
 GAMMA = 0.9
 ALPHA = 0.2
 EPISODES_NUM = 10
+# after 50 steps, check whether that car is still stationary. If that happens, break
+MAX_NUM_STEPS_PER_EPISODE_STATIONARY = 750
 
 def build_world():
     # how fast does it refresh
@@ -169,9 +171,11 @@ class Agent:
     def play_episode(self):
         total_reward = 0.0
         s = self.env.reset()
+        num_steps = 0
         while True:
             _, a = self.best_value_and_action(s)
             new_s, reward, is_done = self.env.step(a)
+            num_steps += 1
             #print("reward %f" %  reward)
             #print(is_done)
             total_reward += reward
@@ -179,6 +183,13 @@ class Agent:
                 print("!!!!!!!!!!!!!Done, ending an episode")
                 print(reward)
                 break
+            if num_steps >= MAX_NUM_STEPS_PER_EPISODE_STATIONARY and self.env.car.speed < 0.1:
+                # car is stopped, break with a large neg reward
+                print("Too manuy steps done and currently stopped, ending an episode")
+                total_reward -= 10000
+                break
+            if (num_steps % 100 == 0):
+                print(num_steps)
 
             s = new_s
 
