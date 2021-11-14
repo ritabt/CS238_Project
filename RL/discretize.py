@@ -68,11 +68,11 @@ class DiscreteAction():
 		return self.vals[idx]
 
 	def discretize(self, val):
-		bin_idx = val//self.step_size
+		bin_idx = (-self.low + val)//self.step_size
 		lower = bin_idx * self.step_size
 		higher = (bin_idx+1) * self.step_size
 
-		if abs(val-lower) <= abs(val-higher):
+		if abs(-self.low + val-lower) <= abs(-self.low + val-higher):
 			return bin_idx
 		else:
 			return bin_idx+1

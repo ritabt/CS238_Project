@@ -61,7 +61,7 @@ class Environment:
         self.num_steer_actions = 13
         # num_bins = num_actions - 1
         self.acceleration_discretizer = RL.DiscreteAction(-1, 1, self.num_accel_actions - 1)
-        self.steering_discretizer = RL.DiscreteAction(0, 2 * np.pi, self.num_steer_actions - 1)
+        self.steering_discretizer = RL.DiscreteAction(-np.pi, np.pi, self.num_steer_actions - 1)
 
         # dictionary which maps linearlized action state index to an RL.Action object
         self.index_to_action = self.make_index_to_action()
@@ -109,10 +109,12 @@ class Environment:
         # Ideally we store both the linear indexed action and the corresponding action class
         # (maybe in a dict)? Then we can just call car.set_control(steer, accel) to command
         car_action = self.index_to_action[action]
-        steering_idx = car_action.st_idx
-        accel_idx = car_action.acc_idx
-        self.car.set_control(car_action.Steering.vals[steering_idx],
-                             car_action.Acceleration[accel_idx])
+        steering_idx = int(car_action.st_idx)
+        accel_idx = int(car_action.acc_idx)
+        # print(steering_idx)
+        # print(accel_idx)
+        self.car.set_control(car_action.Steering.get_val(steering_idx),
+                             car_action.Acceleration.get_val(accel_idx))
 
         self.w.render()
         self.w.tick()
