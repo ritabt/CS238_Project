@@ -14,5 +14,5 @@ class Action():
 		output = output*st_num_vals + self.st_idx
 
 		# add 1 to avoid 0 output
-		output += 1
+		#output += 1
 		return int(output)

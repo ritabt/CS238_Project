@@ -13,7 +13,7 @@ class Entity:
         self.collidable = True
         if movable:
             self.friction = friction
-            self.velocity = Point(0,0) # this is xp, yp
+            self.velocity = Point(0,1.0) # this is xp, yp
             self.acceleration = 0 # this is vp (or speedp)
             self.angular_velocity = 0 # this is headingp
             self.inputSteering = 0

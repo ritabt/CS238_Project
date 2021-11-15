@@ -7,10 +7,9 @@ import carlo
 import time
 import RL
 
-ENV_NAME = "FrozenLake-v1"
 GAMMA = 0.9
 ALPHA = 0.2
-EPISODES_NUM = 20
+EPISODES_NUM = 10
 
 def build_world():
     # how fast does it refresh
@@ -49,10 +48,6 @@ def build_world():
 class Environment:
     def __init__(self):
         self.w, self.goal = build_world()
-        # these moved to reset and should be ok to remove from here
-        #self.car = carlo.Car(carlo.Point(40, 10), np.pi / 2)
-        #self.w.add(self.car)
-        #self.car.set_control(0, 0.55)
 
         # discretizer
         self.position_discretizer = RL.DiscretePos(120, 120, 12, 12)
@@ -111,8 +106,7 @@ class Environment:
         car_action = self.index_to_action[action]
         steering_idx = int(car_action.st_idx)
         accel_idx = int(car_action.acc_idx)
-        # print(steering_idx)
-        # print(accel_idx)
+
         self.car.set_control(car_action.Steering.get_val(steering_idx),
                              car_action.Acceleration.get_val(accel_idx))
 
@@ -120,10 +114,12 @@ class Environment:
         self.w.tick()
 
         #1. Need a “is_done” - we are done if we collide with something (including the goal)
-        is_done = self.w.collision_exists(car_state.car)
+        is_done = (self.w.collision_exists(car_state.car) or  car_state.car.collidesWith(car_state.goal_pos))
         #5. Confirm if this(same comment in the source) is right
-        return car_state.linearize(), \
-               RL.get_reward(car_state, car_action, self.w), \
+        linear_num = car_state.linearize()
+        rew = RL.get_reward(car_state, car_action, self.w)
+        return linear_num, \
+               rew, \
                is_done
 
     # return the number of the actions available
@@ -136,6 +132,9 @@ class Agent:
         self.env = Environment()
         self.s = self.env.reset()
         self.Q = collections.defaultdict(float)
+        for s in range(13*13*13*13*7):
+            for a in range(self.env.num_accel_actions * self.env.num_steer_actions):
+                    self.Q[(s, a)] = -1e8
 
     def sample_env(self):
         a = self.env.action_space_sample()
@@ -145,20 +144,21 @@ class Agent:
         return (old_s, a, r, new_s)
 
     def best_value_and_action(self, s):
-        best_action_value, best_action = None, None
+        best_action_value = None
+        best_action = []
         for a in range(self.env.action_space_number()):
             action_value = self.Q[(s, a)]
+
             if best_action_value is None or best_action_value < action_value:
                 best_action_value = action_value
-                best_action = a
+                if len(best_action) != 0:
+                    best_action = []
 
-        if best_action_value == None:
-            best_action_value = 0.0
+                best_action.append(a)
+            elif best_action_value == action_value:
+                best_action.append(a)
 
-        if best_action == None:
-            best_action = 0.0
-
-        return best_action_value, best_action
+        return best_action_value, random.choice(best_action)
 
     def value_update(self, s, a, r, s_next):
         best_Q, _ = self.best_value_and_action(s_next)
@@ -166,37 +166,39 @@ class Agent:
         old_Q = self.Q[(s, a)]
         self.Q[(s, a)] = old_Q * (1 - ALPHA) + new_Q * ALPHA
 
-    def play_episode(self, env):
+    def play_episode(self):
         total_reward = 0.0
-        s = env.reset()
+        s = self.env.reset()
         while True:
             _, a = self.best_value_and_action(s)
-            new_s, reward, is_done, _ = env.step(a)
+            new_s, reward, is_done = self.env.step(a)
+            #print("reward %f" %  reward)
+            #print(is_done)
             total_reward += reward
             if is_done:
+                print("!!!!!!!!!!!!!Done, ending an episode")
+                print(reward)
                 break
+
             s = new_s
 
         return total_reward
 
+TOTAL_ITER_COUNT = 1000
 if __name__ == "__main__":
-    test_env = gym.make(ENV_NAME)
     agent = Agent()
 
     iteration_count = 0
     best_reward = 0.0
-    while True:
+    while iteration_count <= TOTAL_ITER_COUNT:
         iteration_count += 1
         s, a, r, s_next = agent.sample_env()
         agent.value_update(s, a, r, s_next)
 
         reward = 0.0
         for _ in range(EPISODES_NUM):
-            reward += agent.play_episode(test_env)
+            reward += agent.play_episode()
         reward /= EPISODES_NUM
         if reward > best_reward:
             print("Best reward updated %.3f -> %.3f" % (best_reward, reward))
             best_reward = reward
-        if reward > 0.80:
-            print("Solved in %d iterations!" % iteration_count)
-            break
