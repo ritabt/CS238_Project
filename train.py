@@ -1,17 +1,25 @@
 #!/usr/bin/env python3
-import gym
 import random
 import collections
 import numpy as np
 import carlo
 import time
 import RL
+import pickle
 
-GAMMA = 0.9
-ALPHA = 0.2
-EPISODES_NUM = 10
-# after 50 steps, check whether that car is still stationary. If that happens, break
-MAX_NUM_STEPS_PER_EPISODE_STATIONARY = 750
+
+DEBUG = False
+Q_SAVE_JSON_NAME = "./saved_Q.pkl"
+
+def save_Q(Q):
+    with open(Q_SAVE_JSON_NAME, 'wb') as f:
+        pickle.dump(Q, f)
+
+def load_Q():
+    with open(Q_SAVE_JSON_NAME, "rb") as f:
+        Q = pickle.load(f)
+
+    return Q
 
 def build_world():
     # how fast does it refresh
@@ -97,7 +105,7 @@ class Environment:
 
     # one step forward with the given action
     # returns the new state, reward, is_done
-    def step(self, action):
+    def step(self, action, render):
 
         car_state = RL.State(self.car, self.position_discretizer,
                              self.heading_discretizer, self.goal)
@@ -112,11 +120,13 @@ class Environment:
         self.car.set_control(car_action.Steering.get_val(steering_idx),
                              car_action.Acceleration.get_val(accel_idx))
 
-        self.w.render()
+        if render:
+            self.w.render()
         self.w.tick()
 
         #1. Need a “is_done” - we are done if we collide with something (including the goal)
-        is_done = (self.w.collision_exists(car_state.car) or  car_state.car.collidesWith(car_state.goal_pos))
+        is_done = (self.w.collision_exists(car_state.car) or car_state.car.collidesWith(car_state.goal_pos)
+                  )
         #5. Confirm if this(same comment in the source) is right
         linear_num = car_state.linearize()
         rew = RL.get_reward(car_state, car_action, self.w)
@@ -168,35 +178,43 @@ class Agent:
         old_Q = self.Q[(s, a)]
         self.Q[(s, a)] = old_Q * (1 - ALPHA) + new_Q * ALPHA
 
-    def play_episode(self):
+    def play_episode(self, render=False):
         total_reward = 0.0
         s = self.env.reset()
         num_steps = 0
         while True:
             _, a = self.best_value_and_action(s)
-            new_s, reward, is_done = self.env.step(a)
+            new_s, reward, is_done = self.env.step(a, render)
             num_steps += 1
             #print("reward %f" %  reward)
             #print(is_done)
             total_reward += reward
             if is_done:
-                print("!!!!!!!!!!!!!Done, ending an episode")
-                print(reward)
+                if DEBUG:
+                    print("!!!!!!!!!!!!!Done, ending an episode")
+                    print(reward)
                 break
             if num_steps >= MAX_NUM_STEPS_PER_EPISODE_STATIONARY and self.env.car.speed < 0.1:
                 # car is stopped, break with a large neg reward
-                print("Too manuy steps done and currently stopped, ending an episode")
+                if DEBUG:
+                    print("Too manuy steps done and currently stopped, ending an episode")
                 total_reward -= 10000
                 break
-            if (num_steps % 100 == 0):
-                print(num_steps)
-
+            if (DEBUG):
+                if (num_steps % 500 == 0):
+                    print(num_steps)
             s = new_s
 
         return total_reward
 
+GAMMA = 0.9
+ALPHA = 0.2
+EPISODES_NUM = 10
+# after 50 steps, check whether that car is still stationary. If that happens, break
+MAX_NUM_STEPS_PER_EPISODE_STATIONARY = 100
 TOTAL_ITER_COUNT = 1000
-if __name__ == "__main__":
+
+def train():
     agent = Agent()
 
     iteration_count = 0
@@ -213,3 +231,27 @@ if __name__ == "__main__":
         if reward > best_reward:
             print("Best reward updated %.3f -> %.3f" % (best_reward, reward))
             best_reward = reward
+            save_Q(agent.Q)
+
+        if iteration_count % 50 == 0:
+            print("Current iteration: %d best reward: %f" % (iteration_count, best_reward))
+
+PLAY_NUM = 5
+def play():
+    agent = Agent()
+    print("Loading the saved Q into the agent...")
+    agent.Q = load_Q()
+    total_reward = 0.0
+    for i in range(PLAY_NUM):
+        reward = agent.play_episode(True)
+        print("Play: %d reward %f" % (i, reward))
+        total_reward += reward
+
+    total_reward /= PLAY_NUM
+    print("Done playing with avg. reward %f" % total_reward)
+
+
+
+if __name__ == "__main__":
+    #train()
+    play()
