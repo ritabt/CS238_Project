@@ -42,7 +42,7 @@ def build_world():
     # w.add(carlo.RectangleBuilding(carlo.Point(40, 70), carlo.Point(15, 2), '#FF6103'))
     # w.add(carlo.RectangleBuilding(carlo.Point(40, 77), carlo.Point(15, 2), '#FF6103'))
 
-    goal = carlo.Painting(carlo.Point(60, 100), carlo.Point(40, 1), 'green')
+    goal = carlo.RectangleBuilding(carlo.Point(60, 100), carlo.Point(40, 1), 'green')
 
     w.add(goal)  # We build a goal.
     return w, goal
