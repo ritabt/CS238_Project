@@ -48,16 +48,24 @@ c1.set_control(0, 0.55)
 # w.add(c2)
 # c2.set_control(0, 0.35)
 
+position_discretizer = RL.DiscretePos(120, 120, 12, 12)
+heading_discretizer = RL.DiscreteHeading(6)
+num_accel_actions = 11
+num_steer_actions = 13
+# num_bins = num_actions - 1
+acceleration_discretizer = RL.DiscreteAction(-1, 1, self.num_accel_actions - 1)
+steering_discretizer = RL.DiscreteAction(-np.pi, np.pi, self.num_steer_actions - 1)
 
-Pos = RL.DiscretePos(120, 120, 12, 12)
-Heading = RL.DiscreteHeading(6)
-Acceleration = RL.DiscreteAction(-1, 1, 10)
-Steering = RL.DiscreteAction(0, 2*np.pi, 12)
+# dictionary which maps linearlized action state index to an RL.Action object
+index_to_action = OP.make_index_to_action(acceleration_discretizer, steering_discretizer)
+
 
 while True:
 	w.render()
 	w.tick()
 	time.sleep(dt/4)
+
+	calculateAndExecuteBestActionForwardSearch(c1, Pos, Heading, Acceleration, Steering, w, index_to_action)
 
 	RedCarState = RL.State(c1, Pos, Heading, goal)
 	RedCarAction = RL.Action(c1, Acceleration, Steering)
