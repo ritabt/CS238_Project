@@ -1,16 +1,20 @@
 from .entities import RectangleEntity, CircleEntity, RingEntity
 from .geometry import Point
+import numpy as np
 
 # For colors, we use tkinter colors. See http://www.science.smith.edu/dftwiki/index.php/Color_Charts_for_TKinter
 
 class Car(RectangleEntity):
-    def __init__(self, center: Point, heading: float, color: str = 'red'):
+    def __init__(self, center: Point, heading: float, color: str = 'red', rand_v_init=False):
         size = Point(14., 8.)
         movable = True
         friction = 0.06
         super(Car, self).__init__(center, heading, size, movable, friction)
         self.color = color
         self.collidable = True
+        if rand_v_init:
+            # self.velocity = Point(0, 5)  #for debugging
+            self.velocity = Point(0, np.random.uniform(0.01, 3))
         
 class Pedestrian(CircleEntity):
     def __init__(self, center: Point, heading: float, color: str = 'LightSalmon3'): # after careful consideration, I decided my color is the same as a salmon, so here we go.
