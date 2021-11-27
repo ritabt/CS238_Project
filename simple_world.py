@@ -63,6 +63,7 @@ index_to_action = OP.make_index_to_action(acceleration_discretizer, steering_dis
 while True:
 	w.render()
 	w.tick()
+	# TODO: Add timing statistics to see this
 	time.sleep(dt/4)
 
 	calculateAndExecuteBestActionForwardSearch(c1, Pos, Heading, Acceleration, Steering, w, index_to_action)

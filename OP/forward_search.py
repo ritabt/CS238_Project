@@ -7,6 +7,7 @@ import RL
 import pickle
 
 GAMMA = 1.0
+MAX_DEPTH = 3
 
 def make_index_to_action(acceleration_discretizer, steering_discretizer):
     index_to_action = {}
@@ -29,7 +30,13 @@ def calculateAndExecuteBestActionForwardSearch(car: Car,  Pos: DiscretePos,
 	# Step 1: Get index of current state and action (discrete)
 	# Step 2: Build transition model function T (s', s|a). Get closest discrete state
 	# Step 3: 
-	pass
+	(best_u, best_a) = runForwardSearch(car, index_to_action, MAX_DEPTH)
+    steering_idx = int(best_a.st_idx)
+    accel_idx = int(best_a.acc_idx)
+
+    car.set_control(best_a.Steering.get_val(steering_idx),
+                         best_a.Acceleration.get_val(accel_idx))
+	
 
 def runForwardSearch(car, index_to_action, d):
 	if d == 0:
