@@ -2,6 +2,7 @@ import numpy as np
 import carlo 
 import time 
 import RL
+import OP
 
 DEBUG = True
 
@@ -50,11 +51,11 @@ c1.set_control(0, 0.55)
 
 position_discretizer = RL.DiscretePos(120, 120, 12, 12)
 heading_discretizer = RL.DiscreteHeading(6)
-num_accel_actions = 11
-num_steer_actions = 13
+num_accel_actions = 4
+num_steer_actions = 5
 # num_bins = num_actions - 1
-acceleration_discretizer = RL.DiscreteAction(-1, 1, self.num_accel_actions - 1)
-steering_discretizer = RL.DiscreteAction(-np.pi, np.pi, self.num_steer_actions - 1)
+acceleration_discretizer = RL.DiscreteAction(-1, 1, num_accel_actions - 1)
+steering_discretizer = RL.DiscreteAction(-np.pi, np.pi, num_steer_actions - 1)
 
 # dictionary which maps linearlized action state index to an RL.Action object
 index_to_action = OP.make_index_to_action(acceleration_discretizer, steering_discretizer)
@@ -66,20 +67,20 @@ while True:
 	# TODO: Add timing statistics to see this
 	time.sleep(dt/4)
 
-	calculateAndExecuteBestActionForwardSearch(c1, Pos, Heading, Acceleration, Steering, w, index_to_action)
+	OP.calculateAndExecuteBestActionForwardSearch(c1, position_discretizer, heading_discretizer, w, index_to_action, goal, dt)
 
-	RedCarState = RL.State(c1, Pos, Heading, goal)
-	RedCarAction = RL.Action(c1, Acceleration, Steering)
+	RedCarState = RL.State(c1, position_discretizer, heading_discretizer, goal)
+	RedCarAction = RL.Action(c1, acceleration_discretizer, steering_discretizer)
 	curr_reward = RL.get_reward(RedCarState, RedCarAction, w)
 
 	if DEBUG:
 		print("Red car position: ", c1.center)
 		print("Red car heading: ", c1.heading)
 		print("Red car acceleration: ", c1.inputAcceleration)
-		print("Discrete Red car position: ", Pos.discretize(c1.center.x, c1.center.y))
-		print("Discrete Red car heading: ", Heading.discretize(c1.heading))
-		print("Discrete Red car acceleration: ", Acceleration.discretize(c1.inputAcceleration))
-		print("Linear Red Car State: ", RedCarState.linearize())
+		# print("Discrete Red car position: ", Pos.discretize(c1.center.x, c1.center.y))
+		# print("Discrete Red car heading: ", Heading.discretize(c1.heading))
+		# print("Discrete Red car acceleration: ", Acceleration.discretize(c1.inputAcceleration))
+		# print("Linear Red Car State: ", RedCarState.linearize())
 
 	if curr_reward > 500:
 		print('Red car reached goal...')
