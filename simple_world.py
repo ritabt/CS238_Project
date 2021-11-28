@@ -4,7 +4,7 @@ import time
 import RL
 import OP
 
-DEBUG = True
+DEBUG = False
 
 # how fast does it refresh
 dt = 0.1 # time steps in terms of seconds. In other words, 1/dt is the FPS.
@@ -81,6 +81,7 @@ while True:
 		# print("Discrete Red car heading: ", Heading.discretize(c1.heading))
 		# print("Discrete Red car acceleration: ", Acceleration.discretize(c1.inputAcceleration))
 		# print("Linear Red Car State: ", RedCarState.linearize())
+
 
 	if curr_reward > 500:
 		print('Red car reached goal...')

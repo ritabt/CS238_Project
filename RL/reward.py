@@ -13,6 +13,7 @@ def get_reward(state: State, action: Action, world: carlo.World):
     if state.car.collidesWith(state.goal_pos):
         r = r + 100000
     elif world.collision_exists(state.car):
+        # print(state.car.center)
         r = r - 10000
     else:
         r = r - state.car.distanceTo(state.goal_pos)

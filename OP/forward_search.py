@@ -41,13 +41,24 @@ def runForwardSearch(car: carlo.Car,  Pos: RL.DiscretePos,
                              action.Acceleration.get_val(accel_idx))
         # deterministically update the AVs position
         # TODO: Add step size
+        # if d > 1 and action.Steering.get_val(steering_idx) < -3:
+        #     print("Pos before tick: ", new_car.center)
+        #     print("Speed before tick: ", new_car.speed)
         new_car.tick(dt)
+        # if d > 1 and action.Steering.get_val(steering_idx) < -3:
+        #     print("Pos after tick: ", new_car.center)
+        #     print("Speed after tick: ",new_car.speed)
         new_car_state = RL.State(new_car, Pos,
                              Heading, goal)
         # get index for AVs new position
         u = RL.get_reward(car_state, action, world) + GAMMA * runForwardSearch(new_car, Pos, Heading, world, index_to_action, goal, dt, d - 1)[1]
-        print(action.Acceleration.get_val(accel_idx))
-        print(RL.get_reward(car_state, action, world))
+        
+        # if d > 1 and action.Steering.get_val(steering_idx) < -3:
+        #     print("Accel val: ", action.Acceleration.get_val(accel_idx))
+        #     print("Steer val: ", action.Steering.get_val(steering_idx))
+        #     print("Curr Reward: ", RL.get_reward(car_state, action, world))
+        #     print("Future Reward: ", u - RL.get_reward(car_state, action, world))
+        #     print("Future Reward v2: ", RL.get_reward(new_car_state, action, world))
         if u > best[1]:
             best = (action, u)
     return best
@@ -57,6 +68,7 @@ def calculateAndExecuteBestActionForwardSearch(car: carlo.Car,  Pos: RL.Discrete
     # Step 1: Get index of current state and action (discrete)
     # Step 2: Build transition model function T (s', s|a). Get closest discrete state
     # Step 3: 
+    print("Starting search")
     (best_a, best_u) = runForwardSearch(car, Pos, Heading, world, index_to_action, goal, dt, MAX_DEPTH)
     steering_idx = int(best_a.st_idx)
     accel_idx = int(best_a.acc_idx)

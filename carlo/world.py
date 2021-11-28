@@ -52,7 +52,7 @@ class World:
                             return True
             return False
             
-        if not agent.collidable: return False
+        # if not agent.collidable: return False
         
         for i in range(len(self.agents)):
             if self.agents[i] is not agent and self.agents[i].collidable and agent.collidesWith(self.agents[i]):
