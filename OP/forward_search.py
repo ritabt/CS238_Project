@@ -75,6 +75,7 @@ def calculateAndExecuteBestActionForwardSearch(car: carlo.Car,  Pos: RL.Discrete
 
     car.set_control(best_a.Steering.get_val(steering_idx),
                          best_a.Acceleration.get_val(accel_idx))
+    print(best_a.Acceleration.get_val(accel_idx))
     
 
 
