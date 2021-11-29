@@ -123,3 +123,6 @@ class Environment:
     def action_space_number(self):
         # 2. Need a function returning the number of actions available
         return self.num_accel_actions * self.num_steer_actions
+
+    def state_space_number(self):
+        return 13*13*13*13*7
