@@ -151,7 +151,7 @@ class Agent:
     def sample_env(self):
         a = self.env.action_space_sample()
         old_s = self.s
-        new_s, r, is_done = self.env.step(a)
+        new_s, r, is_done = self.env.step(a, False)
         self.s = self.env.reset() if is_done else new_s
         return (old_s, a, r, new_s)
 
@@ -212,7 +212,7 @@ ALPHA = 0.2
 EPISODES_NUM = 10
 # after 50 steps, check whether that car is still stationary. If that happens, break
 MAX_NUM_STEPS_PER_EPISODE_STATIONARY = 100
-TOTAL_ITER_COUNT = 1000
+TOTAL_ITER_COUNT = 10000
 
 def train():
     agent = Agent()
@@ -236,7 +236,7 @@ def train():
         if iteration_count % 50 == 0:
             print("Current iteration: %d best reward: %f" % (iteration_count, best_reward))
 
-PLAY_NUM = 5
+PLAY_NUM = 100
 def play():
     agent = Agent()
     print("Loading the saved Q into the agent...")
