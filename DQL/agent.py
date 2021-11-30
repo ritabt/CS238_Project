@@ -3,7 +3,7 @@ import random
 from collections import namedtuple, deque 
 
 ##Importing the model (function approximator for Q-table)
-from model import QNetwork
+from model_architecture import QNetwork
 
 import torch
 import torch.nn.functional as F
@@ -103,7 +103,7 @@ class Agent():
         predicted_targets = self.qnetwork_local(states).gather(1,actions)
     
         with torch.no_grad():
-            labels_next = self.qnetwork_target(next_states).detach().max(1)[0].unsqueeze(1)
+            labels_next = self.qnetwork_target(next_state).detach().max(1)[0].unsqueeze(1)
 
         # .detach() ->  Returns a new Tensor, detached from the current graph.
         labels = rewards + (gamma* labels_next*(1-dones))
