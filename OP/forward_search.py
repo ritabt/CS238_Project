@@ -68,14 +68,14 @@ def calculateAndExecuteBestActionForwardSearch(car: carlo.Car,  Pos: RL.Discrete
     # Step 1: Get index of current state and action (discrete)
     # Step 2: Build transition model function T (s', s|a). Get closest discrete state
     # Step 3: 
-    print("Starting search")
+    #print("Starting search")
     (best_a, best_u) = runForwardSearch(car, Pos, Heading, world, index_to_action, goal, dt, MAX_DEPTH)
     steering_idx = int(best_a.st_idx)
     accel_idx = int(best_a.acc_idx)
 
     car.set_control(best_a.Steering.get_val(steering_idx),
                          best_a.Acceleration.get_val(accel_idx))
-    print(best_a.Acceleration.get_val(accel_idx))
+    # print(best_a.Acceleration.get_val(accel_idx))
     
 
 

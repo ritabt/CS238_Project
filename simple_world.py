@@ -34,13 +34,13 @@ for i in range(20):
 # w.add(carlo.RectangleBuilding(carlo.Point(40, 70), carlo.Point(15, 2), '#FF6103'))
 # w.add(carlo.RectangleBuilding(carlo.Point(40, 77), carlo.Point(15, 2), '#FF6103'))
 
-goal = carlo.Painting(carlo.Point(60, 100), carlo.Point(40, 1), 'green')
+goal = carlo.Painting(carlo.Point(60, 80), carlo.Point(20, 1), 'green')
 
 w.add(goal) # We build a goal.
 
 # A Car object is a dynamic object -- it can move. We construct it using its center location and heading angle.
 # Red Car
-c1 = carlo.Car(carlo.Point(40,10), np.pi/2)
+c1 = carlo.Car(carlo.Point(40,10), 0)
 w.add(c1)
 c1.set_control(0, 0.55)
 
@@ -65,13 +65,16 @@ while True:
 	w.render()
 	w.tick()
 	# TODO: Add timing statistics to see this
-	time.sleep(dt/4)
+	# time.sleep(dt)
 
 	OP.calculateAndExecuteBestActionForwardSearch(c1, position_discretizer, heading_discretizer, w, index_to_action, goal, dt)
 
 	RedCarState = RL.State(c1, position_discretizer, heading_discretizer, goal)
 	RedCarAction = RL.Action(c1, acceleration_discretizer, steering_discretizer)
 	curr_reward = RL.get_reward(RedCarState, RedCarAction, w)
+
+	print("Pos at tick: ", c1.center)
+	print("Speed at tick: ", c1.speed)
 
 	if DEBUG:
 		print("Red car position: ", c1.center)
@@ -81,6 +84,8 @@ while True:
 		# print("Discrete Red car heading: ", Heading.discretize(c1.heading))
 		# print("Discrete Red car acceleration: ", Acceleration.discretize(c1.inputAcceleration))
 		# print("Linear Red Car State: ", RedCarState.linearize())
+
+	print(curr_reward)
 
 
 	if curr_reward > 500:
