@@ -1,5 +1,4 @@
 import numpy as np
-import torch 
 
 class State():
 
@@ -13,7 +12,7 @@ class State():
 		self.goal_pos_idx = Pos.discretize(GoalPos.center.x, GoalPos.center.y)
 
 	def vectorize(self):
-		return torch.tensor([self.pos_idx, self.h_idx, self.goal_pos_idx])
+		return np.array([self.pos_idx, self.h_idx, self.goal_pos_idx])
 
 	def linearize(self):
 		# start by adding position
