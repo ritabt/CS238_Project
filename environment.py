@@ -82,6 +82,19 @@ class Environment:
                              self.heading_discretizer, self.goal)
         return car_state.linearize()
 
+    # reset the world and restart, vector return versioon
+    def reset_vector(self):
+        self.w.reset()
+        self.car = carlo.Car(carlo.Point(40, 10), np.pi / 2)
+        self.w.add(self.car)
+        self.car.set_control(0, 0.55)
+
+        # return the car state
+        car_state = RL.State(self.car, self.position_discretizer,
+                                 self.heading_discretizer, self.goal)
+        return car_state.vectorize()
+
+
     # sample an action randomly from the action space
     def action_space_sample(self):
         # 3. Need a function returning a random action
@@ -126,3 +139,35 @@ class Environment:
 
     def state_space_number(self):
         return 13*13*13*13*7
+
+
+    # one step forward with the given action
+    # returns the new state, reward, is_done
+    def step_vector(self, action, render=False):
+
+        car_state = RL.State(self.car, self.position_discretizer,
+                             self.heading_discretizer, self.goal)
+
+        # 4. ***Given a linear indexed action, how to command the car?
+        # Ideally we store both the linear indexed action and the corresponding action class
+        # (maybe in a dict)? Then we can just call car.set_control(steer, accel) to command
+        car_action = self.index_to_action[action]
+        steering_idx = int(car_action.st_idx)
+        accel_idx = int(car_action.acc_idx)
+
+        self.car.set_control(car_action.Steering.get_val(steering_idx),
+                             car_action.Acceleration.get_val(accel_idx))
+
+        if render:
+            self.w.render()
+        self.w.tick()
+
+        #1. Need a “is_done” - we are done if we collide with something (including the goal)
+        is_done = (self.w.collision_exists(car_state.car) or car_state.car.collidesWith(car_state.goal_pos)
+                  )
+        #5. Confirm if this(same comment in the source) is right
+        next_state = car_state.vectorize()
+        rew = RL.get_reward(car_state, car_action, self.w)
+        return next_state, \
+               rew, \
+               is_done

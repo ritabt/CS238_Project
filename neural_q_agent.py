@@ -24,8 +24,8 @@ class QNetwork(nn.Module):
         self.fc3 = nn.Linear(fc2_unit, action_size)
 
     def forward(self, x):
+        x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
         return self.fc3(x)
 
 class ReplayBuffer:
@@ -51,10 +51,10 @@ class ReplayBuffer:
         experiences = random.sample(self.memory, k=self.batch_size)
 
         #  make sure the num types are matched
-        states = torch.from_numpy(np.vstack([e.state for e in experiences if e is not None])).long().to(device)
+        states = torch.from_numpy(np.vstack([e.state for e in experiences if e is not None])).float().to(device)
         actions = torch.from_numpy(np.vstack([e.action for e in experiences if e is not None])).long().to(device)
         rewards = torch.from_numpy(np.vstack([e.reward for e in experiences if e is not None])).float().to(device)
-        next_states = torch.from_numpy(np.vstack([e.next_state for e in experiences if e is not None])).long().to(device)
+        next_states = torch.from_numpy(np.vstack([e.next_state for e in experiences if e is not None])).float().to(device)
         dones = torch.from_numpy(np.vstack([e.done for e in experiences if e is not None]).astype(np.uint8)).float().to(device)
 
         return(states, actions, rewards, next_states, dones)
@@ -66,10 +66,10 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class NeuralQAgent():
 
-    def __init__(self, seed):
+    def __init__(self, state_size, action_size, seed):
         self.env = Environment()
-        self.state_size = self.env.state_space_number()
-        self.action_size = self.env.action_space_number()
+        self.state_size = state_size
+        self.action_size = action_size
         self.seed = random.seed(seed)
 
         self.qnetwork_local = QNetwork(self.state_size, self.action_size, seed).to(device)
@@ -90,7 +90,7 @@ class NeuralQAgent():
                 self.learn(experience, GAMMA)
 
     def act(self, state, eps=0):
-        state.torch.from_numpy(state).float().unsqueeze(0).to(device)
+        state = torch.from_numpy(state).float().unsqueeze(0).to(device)
         self.qnetwork_local.eval()
         with torch.no_grad():
             action_values = self.qnetwork_local(state)
@@ -123,3 +123,36 @@ class NeuralQAgent():
         self.optimizer.step()
 
         self.soft_update(self.qnetwork_local, self.qnetwork_target, TAU)
+
+    def train(self, n_episodes=200, max_t=1000, eps_start=1.0, eps_end=0.01, eps_decay=0.996):
+        # scores for each episode
+        scores = []
+        # last 100 scores
+        scores_window = deque(maxlen=100)
+        eps = eps_start
+        for i_episode in range(1, n_episodes+1):
+            state = self.env.reset_vector()
+            score = 0
+            for t in range(max_t):
+                action = self.act(state, eps)
+                next_state, reward, done = self.env.step_vector(action)
+                self.step(state, action, reward, next_state, done)
+                state = next_state
+                score += reward
+                if done:
+                    break
+
+                scores_window.append(score)
+                scores.append(score)
+
+                eps = max(eps*eps_decay, eps_end)
+                print('\rEpisode {}\tAverage Score {:.2f}'.format(i_episode, np.mean(scores_window)), end="")
+                if i_episode % 100 == 0:
+                    print('\rEpisode {}\tAverage Score {:.2f}'.format(i_episode, np.mean(scores_window)), end="")
+
+                if np.mean(scores_window) >= 200.0:
+                    print('\nEnvironment solve in {:d} episodes!\tAverage score: {:.2f}'.format(i_episode-100,
+                                                                                                np.mean(scores_window)))
+                    torch.save(self.qnetwork_local.state_dict(), 'checkpoint.pth')
+                    break
+        return scores

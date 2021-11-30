@@ -1,3 +1,6 @@
+import numpy as np
+import torch
+
 class State():
 	def __init__(self, Car, Pos, Heading, GoalPos):
 		self.Pos = Pos
@@ -7,6 +10,9 @@ class State():
 		self.pos_idx = Pos.discretize(Car.center.x, Car.center.y)
 		self.h_idx = Heading.discretize(Car.heading)
 		self.goal_pos_idx = Pos.discretize(GoalPos.center.x, GoalPos.center.y)
+
+	def vectorize(self):
+		return np.array([self.pos_idx, self.h_idx, self.goal_pos_idx])
 
 	def linearize(self):
 		# start by adding position
