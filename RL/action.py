@@ -1,9 +1,15 @@
+import numpy as np
+import torch 
+
 class Action():
 	def __init__(self, Car, Acceleration, Steering):
 		self.Acceleration = Acceleration
 		self.Steering = Steering
 		self.acc_idx = Acceleration.discretize(Car.inputAcceleration)
 		self.st_idx = Steering.discretize(Car.inputSteering)
+
+	def vectorize(self):
+		return torch.tensor([self.acc_idx, self.st_idx])
 
 	def linearize(self):
 		# start by adding acceleration
