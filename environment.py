@@ -143,7 +143,7 @@ class Environment:
 
     # one step forward with the given action
     # returns the new state, reward, is_done
-    def step_vector(self, action, render=False):
+    def step_vector(self, action, render=True):
 
         car_state = RL.State(self.car, self.position_discretizer,
                              self.heading_discretizer, self.goal)
@@ -162,12 +162,11 @@ class Environment:
             self.w.render()
         self.w.tick()
 
-        #1. Need a “is_done” - we are done if we collide with something (including the goal)
-        is_done = (self.w.collision_exists(car_state.car) or car_state.car.collidesWith(car_state.goal_pos)
-                  )
-        #5. Confirm if this(same comment in the source) is right
+        is_done = (self.w.collision_exists(car_state.car) or car_state.car.collidesWith(car_state.goal_pos))
+        hit_goal = car_state.car.collidesWith(car_state.goal_pos)
         next_state = car_state.vectorize()
         rew = RL.get_reward(car_state, car_action, self.w)
         return next_state, \
                rew, \
-               is_done
+               is_done, \
+               hit_goal

@@ -4,9 +4,8 @@ import numpy as np
 from tabular_q_agent import TabQAgent
 from neural_q_agent import NeuralQAgent
 
-if __name__ == "__main__":
-    #agent = TabQAgent()
-    agent = NeuralQAgent(state_size=3, action_size=2, seed=0)
+def train():
+    agent = NeuralQAgent(seed=0)
     scores = agent.train()
 
     # plot the scores
@@ -16,4 +15,11 @@ if __name__ == "__main__":
     plt.ylabel('Score')
     plt.xlabel('Epsiode #')
     plt.show()
-    #agent.play()
+
+def play():
+    agent = NeuralQAgent(seed=0)
+    agent.play()
+
+if __name__ == "__main__":
+    #train()
+    play()

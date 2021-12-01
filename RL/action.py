@@ -8,9 +8,6 @@ class Action():
 		self.acc_idx = Acceleration.discretize(Car.inputAcceleration)
 		self.st_idx = Steering.discretize(Car.inputSteering)
 
-	def vectorize(self):
-		return np.array([self.acc_idx, self.st_idx])
-
 	def linearize(self):
 		# start by adding acceleration
 		output = self.acc_idx

@@ -66,10 +66,10 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class NeuralQAgent():
 
-    def __init__(self, state_size, action_size, seed):
+    def __init__(self, seed):
         self.env = Environment()
-        self.state_size = state_size
-        self.action_size = action_size
+        self.state_size = 3
+        self.action_size = self.env.action_space_number()
         self.seed = random.seed(seed)
 
         self.qnetwork_local = QNetwork(self.state_size, self.action_size, seed).to(device)
@@ -124,7 +124,7 @@ class NeuralQAgent():
 
         self.soft_update(self.qnetwork_local, self.qnetwork_target, TAU)
 
-    def train(self, n_episodes=200, max_t=1000, eps_start=1.0, eps_end=0.01, eps_decay=0.996):
+    def train(self, n_episodes=200, max_t=3000, eps_start=1.0, eps_end=0.01, eps_decay=0.996):
         # scores for each episode
         scores = []
         # last 100 scores
@@ -135,12 +135,14 @@ class NeuralQAgent():
             score = 0
             for t in range(max_t):
                 action = self.act(state, eps)
-                next_state, reward, done = self.env.step_vector(action)
+                next_state, reward, done, hit_goal = self.env.step_vector(action)
                 self.step(state, action, reward, next_state, done)
                 state = next_state
                 score += reward
                 if done:
-                    break
+                    if hit_goal:
+                        print("Hit the goal!")
+
 
                 scores_window.append(score)
                 scores.append(score)
@@ -156,3 +158,16 @@ class NeuralQAgent():
                     torch.save(self.qnetwork_local.state_dict(), 'checkpoint.pth')
                     break
         return scores
+
+    def play(self):
+        self.qnetwork_local.load_state_dict(torch.load('checkpoint.pth'))
+        for i in range(3):
+            state = self.env.reset_vector()
+            for j in range(3000):
+                action = self.act(state)
+                state, reward, done, _ = self.env.step_vector(action, True)
+                if done:
+                    break
+
+
+
