@@ -1,6 +1,7 @@
 import carlo
 from .state import State
 from .action import Action
+import numpy as np
 
 def get_reward(state: State, action: Action, world: carlo.World):
 	# r = r(s, a)
@@ -15,6 +16,9 @@ def get_reward(state: State, action: Action, world: carlo.World):
     elif world.collision_exists(state.car):
         r = r - 1000
     else:
-        r = r - 1
+        goal = state.goal_pos.center
+        car = state.car.center
+        dist = np.sqrt((goal.x-car.x)**2 + (goal.y-car.y)**2)
+        r = r - 1 - dist/12
 
     return r
