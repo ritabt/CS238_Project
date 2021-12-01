@@ -85,6 +85,7 @@ class Environment:
         # return the car state
         car_state = RL.State(self.car, self.position_discretizer,
                              self.heading_discretizer, self.goal)
+        self.state = car_state
         return car_state.linearize()
 
     # sample an action randomly from the action space
@@ -99,6 +100,7 @@ class Environment:
 
         car_state = RL.State(self.car, self.position_discretizer,
                              self.heading_discretizer, self.goal)
+        self.state = car_state
 
         # 4. ***Given a linear indexed action, how to command the car?
         # Ideally we store both the linear indexed action and the corresponding action class
@@ -132,7 +134,8 @@ class Agent:
         self.env = Environment()
         self.s = self.env.reset()
         self.Q = collections.defaultdict(float)
-        for s in range(13*13*13*13*7):
+        num_states = self.env.state.get_num_states()
+        for s in range(num_states):
             for a in range(self.env.num_accel_actions * self.env.num_steer_actions):
                     self.Q[(s, a)] = -1e8
 

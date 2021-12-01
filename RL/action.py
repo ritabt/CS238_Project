@@ -8,6 +8,11 @@ class Action():
 		self.acc_idx = Acceleration.discretize(Car.inputAcceleration)
 		self.st_idx = Steering.discretize(Car.inputSteering)
 
+	def get_num_actions(self):
+		output = self.Acceleration.num_bins
+		output *= self.Steering.num_bins
+		return output
+
 	def vectorize(self):
 		return np.array([self.acc_idx, self.st_idx])
 

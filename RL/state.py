@@ -11,6 +11,12 @@ class State():
 		self.h_idx = Heading.discretize(Car.heading)
 		self.goal_pos_idx = Pos.discretize(GoalPos.center.x, GoalPos.center.y)
 
+	def get_num_states(self):
+		output = self.Heading.num_bins + 1
+		output *= (self.Pos.width_bins + 1) 
+		output *= (self.Pos.height_bins + 1)
+		return output
+
 	def vectorize(self):
 		return np.array([self.pos_idx, self.h_idx, self.goal_pos_idx])
 
