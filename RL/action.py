@@ -9,8 +9,8 @@ class Action():
 		self.st_idx = Steering.discretize(Car.inputSteering)
 
 	def get_num_actions(self):
-		output = self.Acceleration.num_bins
-		output *= self.Steering.num_bins
+		output = self.Acceleration.num_bins + 1
+		output *= (self.Steering.num_bins + 1)
 		return output
 
 	def vectorize(self):

@@ -10,11 +10,9 @@ import sys
 sys.path.append('../')
 import carlo
 import RL
+import torch
+import matplotlib.pyplot as plt
 
-
-GAMMA = 0.9
-ALPHA = 0.2
-EPISODES_NUM = 10
 
 def build_world():
     # how fast does it refresh
@@ -83,7 +81,7 @@ class Environment:
     # reset the world and restart
     def reset(self):
         self.w.reset()
-        self.car = carlo.Car(carlo.Point(40, 10), np.pi / 2)
+        self.car = carlo.Car(carlo.Point(40, 10), np.pi / 2, rand_v_init=True)
         self.w.add(self.car)
         self.car.set_control(0, 0.55)
 
@@ -118,11 +116,13 @@ class Environment:
         self.w.render()
         self.w.tick()
 
-        #1. Need a “is_done” - we are done if we collide with something (including the goal)
-        is_done = (self.w.collision_exists(car_state.car) or  car_state.car.collidesWith(car_state.goal_pos))
+        
         #5. Confirm if this(same comment in the source) is right
         linear_num = car_state.vectorize()
         rew = RL.get_reward(car_state, car_action, self.w)
+
+        #1. Need a “is_done” - we are done if we collide with something (including the goal)
+        is_done = (self.w.collision_exists(car_state.car) or  car_state.car.collidesWith(car_state.goal_pos) or rew<-3000)
         return linear_num, \
                rew, \
                is_done
@@ -132,10 +132,14 @@ class Environment:
         # 2. Need a function returning the number of actions available
         return self.num_accel_actions * self.num_steer_actions
 
-agent = Agent(state_size=3,action_size=2,seed=0)
-env = Environment()
 
-def dqn(n_episodes= 200, max_t = 1000, eps_start=1.0, eps_end = 0.01,
+env = Environment()
+num_actions = env.action_space_number()
+agent = Agent(state_size=3, action_size=num_actions, seed=0)
+agent.qnetwork_local.load_state_dict(torch.load('checkpoint.pth'))
+
+
+def dqn(n_episodes= 400, max_t = 10000, eps_start=0.1, eps_end = 0.01,
        eps_decay=0.996):
     """Deep Q-Learning
     
@@ -151,29 +155,33 @@ def dqn(n_episodes= 200, max_t = 1000, eps_start=1.0, eps_end = 0.01,
     scores = [] # list containing score from each episode
     scores_window = deque(maxlen=100) # last 100 scores
     eps = eps_start
+    all_actions = env.index_to_action.keys()
+    flag = False
     for i_episode in range(1, n_episodes+1):
         state = env.reset()
         score = 0
         for t in range(max_t):
-            action = agent.act(state,eps)
-            next_state, reward, done = env.step(action)
-            agent.step(state, action, reward, next_state, done)
+            action_idx = agent.act(state, eps)
+            next_state, reward, done = env.step(action_idx)
+            agent.step(state, action_idx, reward, next_state, done)
             state = next_state
             score += reward
             if done:
                 break
             scores_window.append(score) ## save the most recent score
-            scores.append(score) ## sae the most recent score
+            scores.append(score) ## save the most recent score
             eps = max(eps*eps_decay,eps_end)## decrease the epsilon
             print('\rEpisode {}\tAverage Score {:.2f}'.format(i_episode,np.mean(scores_window)), end="")
-            if i_episode %100==0:
-                print('\rEpisode {}\tAverage Score {:.2f}'.format(i_episode,np.mean(scores_window)))
                 
-            if np.mean(scores_window)>=200.0:
+            if np.mean(scores_window)>=0:
+                flag = True
                 print('\nEnvironment solve in {:d} epsiodes!\tAverage score: {:.2f}'.format(i_episode-100,
                                                                                            np.mean(scores_window)))
                 torch.save(agent.qnetwork_local.state_dict(),'checkpoint.pth')
                 break
+        if i_episode % 100 == 0:
+            torch.save(agent.qnetwork_local.state_dict(),'checkpoint.pth')
+
     return scores
 
 scores= dqn()

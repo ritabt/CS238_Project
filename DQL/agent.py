@@ -75,6 +75,7 @@ class Agent():
         self.qnetwork_local.train()
 
         #Epsilon -greedy action selction
+        # TODO: map index to linearized action
         if random.random() > eps:
             return np.argmax(action_values.cpu().data.numpy())
         else:
